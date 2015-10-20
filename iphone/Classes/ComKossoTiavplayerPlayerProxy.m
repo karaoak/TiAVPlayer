@@ -43,6 +43,7 @@
 @synthesize time;
 @synthesize pausedForAudioSessionInterruption;
 @synthesize live_flag;
+@synthesize trackTitle;
 
 
 
@@ -51,7 +52,7 @@
     if(avPlayer!=nil){
         if([avPlayer currentItem] != nil){
             //NSLog(@"[INFO] DEALLOC remove item observers");
-            //[avPlayer.currentItem removeObserver:self forKeyPath:@"timedMetadata"];
+            [avPlayer.currentItem removeObserver:self forKeyPath:@"timedMetadata"];
             [avPlayer.currentItem removeObserver:self forKeyPath:@"status"];
             [avPlayer.currentItem removeObserver:self forKeyPath:@"playbackBufferEmpty"];
             [avPlayer.currentItem removeObserver:self forKeyPath:@"playbackLikelyToKeepUp"];
@@ -90,7 +91,7 @@
             }
             if([avPlayer currentItem] != nil){
                 //NSLog(@"[INFO] remove item observers");
-                //[avPlayer.currentItem removeObserver:self forKeyPath:@"timedMetadata"];
+                [avPlayer.currentItem removeObserver:self forKeyPath:@"timedMetadata"];
                 [avPlayer.currentItem removeObserver:self forKeyPath:@"status"];
                 [avPlayer.currentItem removeObserver:self forKeyPath:@"playbackBufferEmpty"];
                 [avPlayer.currentItem removeObserver:self forKeyPath:@"playbackLikelyToKeepUp"];
@@ -125,6 +126,17 @@
     });
 }
 
+- (void)updateTrackTitle:(id)value
+{
+    if (![NSThread isMainThread]) {
+        TiThreadPerformOnMainThread(^{[self updateTrackTitle:value];}, YES);
+        return;
+    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self fireTrackTitleChangeEvent:value];
+    });
+}
+
 - (void)setUrl:(id)value
 {
     if (![NSThread isMainThread]) {
@@ -154,7 +166,7 @@
             playing = NO;
         }
         if([avPlayer currentItem] != nil){
-            //[avPlayer.currentItem removeObserver:self forKeyPath:@"timedMetadata"];
+            [avPlayer.currentItem removeObserver:self forKeyPath:@"timedMetadata"];
             [avPlayer.currentItem removeObserver:self forKeyPath:@"status"];
             [avPlayer.currentItem removeObserver:self forKeyPath:@"playbackBufferEmpty"];
             [avPlayer.currentItem removeObserver:self forKeyPath:@"playbackLikelyToKeepUp"];
@@ -237,7 +249,7 @@
     [avPlayer.currentItem addObserver:self forKeyPath:@"status" options:NSKeyValueObservingOptionNew context:nil];
     
     // KVO for timed metadata. Live streams can send out this data.  This is not for ID3 tags. I need to figure that out.
-    //[avPlayer.currentItem addObserver:self forKeyPath:@"timedMetadata" options:nil context:nil];
+    [avPlayer.currentItem addObserver:self forKeyPath:@"timedMetadata" options:nil context:nil];
     // KVO For buffering..
     [avPlayer.currentItem addObserver:self forKeyPath:@"playbackBufferEmpty" options:NSKeyValueObservingOptionNew context:nil];
     [avPlayer.currentItem addObserver:self forKeyPath:@"playbackLikelyToKeepUp" options:NSKeyValueObservingOptionNew context:nil];
@@ -417,7 +429,7 @@
                 [self updateDuration];
             }
         }
-    } /* else if ([keyPath isEqualToString:@"timedMetadata"]) {
+    } else if ([keyPath isEqualToString:@"timedMetadata"]) {
         
         NSLog(@"[INFO] currentItem timedMetadata!!");
         AVPlayerItem* _playerItem = object;
@@ -425,6 +437,10 @@
          for (AVMetadataItem* metadata in _playerItem.timedMetadata)
          {
             NSLog(@"[INFO] timedMetadata: key: %@\nkeySpace: %@\ncommonKey: %@\nvalue: %@", [metadata.key description], metadata.keySpace, metadata.commonKey, metadata.stringValue);
+            //Update the tackTitle and fire event
+            trackTitle = metadata.stringValue;
+            [self updateTrackTitle:trackTitle];
+             
          }
          //NSArray *mmetadata = [_playerItem.asset metadata]; // iOS 8+
          
@@ -440,7 +456,7 @@
             NSString *value = [item stringValue];
             NSLog(@"[INFO] metadata: key = %@, value = %@", key, value);
         }
-    } */
+    }
     
 }
 
@@ -752,7 +768,7 @@
              */
             if(state != lastPlayerState && avPlayer.currentItem.status == AVPlayerStatusReadyToPlay && live_flag==NO){
                 lastPlayerState = state;
-                //NSLog(@"[INFO] avPlayer : state changed in updateProgress timer. fire change event");
+                //NSLog(@"[INFO] avPlayer : state d in updateProgress timer. fire change event");
                 [self fireStateChangeEvent:lastPlayerState];
             }
             
@@ -800,6 +816,18 @@
                                NUMINT(state),   @"state",
                                @"durationchange",   @"type",nil];
         [self fireEvent:@"durationchange" withObject:event];
+    }
+}
+
+-(void)fireTrackTitleChangeEvent:(id)value
+{
+    // audio player to the end.
+    if ([self _hasListeners:@"tracktitlechange"]) {
+        NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
+                               (NSString*)(value), @"tracktitle",
+                               self,		@"source",
+                               @"tracktitlechange",   @"type",nil];
+        [self fireEvent:@"tracktitlechange" withObject:event];
     }
 }
 

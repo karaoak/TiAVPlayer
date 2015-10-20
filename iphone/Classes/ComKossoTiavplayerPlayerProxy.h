@@ -75,6 +75,7 @@ Ti.Media.audioPlayer on Android is:
 @property (nonatomic, readwrite, assign) double time;
 @property (nonatomic, readwrite, assign) int status;
 @property (nonatomic, readwrite, assign) int state;
+@property (nonatomic, readwrite, assign) NSString* trackTitle;
 
 @property (nonatomic, assign) BOOL playing;
 @property (nonatomic, assign) BOOL paused;
@@ -82,6 +83,8 @@ Ti.Media.audioPlayer on Android is:
 @property (nonatomic, assign) BOOL live_flag;
 @property (nonatomic, assign) BOOL streaming;
 @property (nonatomic, assign) BOOL pausedForAudioSessionInterruption;
+
+
 
 
 
