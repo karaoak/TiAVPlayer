@@ -43,8 +43,6 @@
 @synthesize time;
 @synthesize pausedForAudioSessionInterruption;
 @synthesize live_flag;
-@synthesize trackTitle;
-
 
 
 -(void)dealloc
@@ -126,14 +124,14 @@
     });
 }
 
-- (void)updateTrackTitle:(id)value
+- (void)updateTimedMetadataTitle:(id)value
 {
     if (![NSThread isMainThread]) {
-        TiThreadPerformOnMainThread(^{[self updateTrackTitle:value];}, YES);
+        TiThreadPerformOnMainThread(^{[self updateTimedMetadataTitle:value];}, YES);
         return;
     }
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self fireTrackTitleChangeEvent:value];
+        [self fireTimedMetadataTitleChangeEvent:value];
     });
 }
 
@@ -436,12 +434,14 @@
 
          for (AVMetadataItem* metadata in _playerItem.timedMetadata)
          {
-            NSLog(@"[INFO] timedMetadata: key: %@\nkeySpace: %@\ncommonKey: %@\nvalue: %@", [metadata.key description], metadata.keySpace, metadata.commonKey, metadata.stringValue);
-            //Update the tackTitle and fire event
-            trackTitle = metadata.stringValue;
-            [self updateTrackTitle:trackTitle];
-             
+            //NSLog(@"[INFO] timedMetadata: key: %@\nkeySpace: %@\ncommonKey: %@\nvalue: %@", [metadata.key description], metadata.keySpace, metadata.commonKey, metadata.stringValue);
+            
+             if([metadata.commonKey isEqualToString:@"title"]) {
+                 //Fire event for timedMetadata title
+                 [self updateTimedMetadataTitle:metadata.stringValue];
+             }
          }
+        
          //NSArray *mmetadata = [_playerItem.asset metadata]; // iOS 8+
          
          NSArray *mmetadata = [_playerItem.asset commonMetadata];
@@ -819,15 +819,14 @@
     }
 }
 
--(void)fireTrackTitleChangeEvent:(id)value
+-(void)fireTimedMetadataTitleChangeEvent:(id)value
 {
-    // audio player to the end.
-    if ([self _hasListeners:@"tracktitlechange"]) {
+    if ([self _hasListeners:@"timedmetadatatitlechange"]) {
         NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:
-                               (NSString*)(value), @"tracktitle",
+                               (NSString*)(value), @"title",
                                self,		@"source",
-                               @"tracktitlechange",   @"type",nil];
-        [self fireEvent:@"tracktitlechange" withObject:event];
+                               @"timedmetadatatitlechange",   @"type",nil];
+        [self fireEvent:@"timedmetadatatitlechange" withObject:event];
     }
 }
 

@@ -59,6 +59,15 @@ avplayer.addEventListener('durationavailable', function(e){
 
 });
 
+avplayer.addEventListener('timedmetadatatitlechange', function(e){
+
+    console.log('timedmetadatatitlechange');
+    //console.log(e);
+    nowplaying.text = e.title;
+    
+});
+
+
 
 avplayer.addEventListener('error', function(e){
 	console.log('!!!!!  avplayer ERROR event!');
@@ -67,6 +76,7 @@ avplayer.addEventListener('error', function(e){
 	//console.log(e.source.status);
 	msg.text = avplayer_status_strings[e.status];
 	prog.text = "--:-- / --:--";
+	nowplaying.text ="---";
 	alert('error!\n\n'+e.message);
 
 	slider.enabled = false;
@@ -175,6 +185,7 @@ stop.addEventListener('click', function(e){
 	
 	prog.text = '00:00 / '+msecsToSecsAndMinutes(avplayer.duration);
 	slider.value = 0;
+	nowplaying.text ="---";
 
 });
 
@@ -189,6 +200,11 @@ var prog = Ti.UI.createLabel({
 	text:'--:-- / --:--',
 	top:10,
 	width:Ti.UI.SIZE
+});
+var nowplaying = Ti.UI.createLabel({
+    text:'---',
+    top:10,
+    width:Ti.UI.SIZE
 });
 
 var slider = Titanium.UI.createSlider({
@@ -218,6 +234,7 @@ scroller.add(stop);
 scroller.add(pause);
 scroller.add(msg);
 scroller.add(prog);
+scroller.add(nowplaying);
 
 scroller.add(slider);
 
@@ -285,7 +302,8 @@ newtune.addEventListener('click', function(e){
 	prog.text = '--:-- / --:--';
 	avplayer.url = "http://users.skynet.be/fa046054/home/P22/track37.mp3"; // Via : http://www.testsounds.com/
 	msg.text = avplayer_player_state[avplayer.state];
-
+    nowplaying.text ="---";
+	
 	avplayer.addEventListener('playerstatuschange', tuneReadyToPlay);
 
 });
@@ -306,7 +324,9 @@ start_radio.addEventListener('click', function(e){
 
 	slider.value = 0;
 	prog.text = '--:-- / --:--';
-	avplayer.url = "http://www.listenlive.eu/bbcradio1.m3u"; // BBC Radio 1 : Url via : http://www.listenlive.eu/uk.html
+	nowplaying.text ="---";
+	//avplayer.url = "http://www.listenlive.eu/bbcradio1.m3u"; // BBC Radio 1 : Url via : http://www.listenlive.eu/uk.html
+	avplayer.url = "http://radigo01.nci.de:8000/high_q";
 	msg.text = avplayer_player_state[avplayer.state];
 
 	avplayer.addEventListener('playerstatuschange', readyToPlayLive);
@@ -336,6 +356,7 @@ bogus.addEventListener('click', function(e){
 
 	slider.value = 0;
 	prog.text = '--:-- / --:--';
+	nowplaying.text ="---";
 	avplayer.url = "file:///error.mp3";
 	// should fire the 'error' event.
 	msg.text = avplayer.state;
