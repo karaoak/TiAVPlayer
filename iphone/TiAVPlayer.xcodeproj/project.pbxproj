@@ -164,7 +164,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0600;
+				LastUpgradeCheck = 0710;
 			};
 			buildConfigurationList = 1DEB922208733DC00010E9CD /* Build configuration list for PBXProject "TiAVPlayer" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -305,6 +305,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DSTROOT = /tmp/ComKossoTiavplayer.dst;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;

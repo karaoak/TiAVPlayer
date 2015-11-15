@@ -210,6 +210,8 @@
     
     // or load the url to the AVPlayer directly
     avPlayer = [[AVPlayer alloc] initWithURL:[NSURL URLWithString:escapedValue]];
+    // http://stackoverflow.com/questions/8807914/airplay-of-audio-using-avplayer-does-not-work-in-the-background
+    avPlayer.allowsExternalPlayback = NO;
     
 
     // Notify end of audio file.
